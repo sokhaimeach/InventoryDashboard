@@ -28,9 +28,15 @@ export type ProductType = {
     name: string
   }
   images: string[]
+  description: string
 }
 
-export const columns: ColumnDef<ProductType>[] = [
+interface Props {
+  onEdit: (product: ProductType) => void;
+  onDelete: (product: ProductType) => void;
+}
+
+export const columns = ({onEdit, onDelete}: Props): ColumnDef<ProductType>[] => [
   {
     accessorKey: "product_id",
     header: "ID",
@@ -82,7 +88,7 @@ export const columns: ColumnDef<ProductType>[] = [
     header: () => (
       <div className="text-right">CATEGORY</div>
     ),
-    cell: () => {
+    cell: ({row}) => {
       return (
         <div className="flex justify-end">
           <DropdownMenu>
@@ -95,8 +101,13 @@ export const columns: ColumnDef<ProductType>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem><Pencil />Edit</DropdownMenuItem>
-              <DropdownMenuItem><Trash2 className="text-red-500" /><span className="text-red-500">Delete</span></DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                <Pencil />Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDelete(row.original)}>
+                <Trash2 className="text-red-500" />
+                <span className="text-red-500">Delete</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

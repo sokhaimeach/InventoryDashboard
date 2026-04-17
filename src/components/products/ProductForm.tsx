@@ -22,7 +22,9 @@ import {
 import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from '../ui/select';
 import { useCategories } from '@/hooks/useCategoryQuery';
 import { Spinner } from '../ui/spinner';
-import { useCreateProduct } from '@/hooks/useProduct';
+import { useCreateProduct, useUpdateProduct } from '@/hooks/useProduct';
+import type { ProductType } from './columns';
+import { useEffect } from 'react';
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -38,12 +40,15 @@ export type ProductSchemaType = z.infer<typeof productSchema>;
 interface Props {
   open: boolean,
   setOpen: (open: boolean) => void;
+  product?: ProductType;
+  isEdit: boolean;
 }
 
-const ProductForm = ({ open, setOpen }: Props) => {
+const ProductForm = ({ open, setOpen, product, isEdit }: Props) => {
   const { data, isLoading } = useCategories();
 
   const {mutate: createProductMutate, isPending} = useCreateProduct();
+  const {mutate: updateProductMutate, isPending: isPeningUpdate} = useUpdateProduct();
 
   const form = useForm({
     defaultValues: {
@@ -58,17 +63,42 @@ const ProductForm = ({ open, setOpen }: Props) => {
       onSubmit: productSchema
     },
     onSubmit: async ({ value }) => {
-      createProductMutate(value, {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
-        },
-        onError: (error) => {
-          console.error("create product error:", error);
-        },
-      });
+      if (isEdit && product) {
+        updateProductMutate({
+          id: product.product_id, 
+          request: value}, {
+            onSuccess: () => {
+            setOpen(false);
+            form.reset();
+          },
+            onError: (error) => {
+            console.error("update product error:", error);
+          },
+        });
+      } else {
+        createProductMutate(value, {
+          onSuccess: () => {
+            setOpen(false);
+            form.reset();
+          },
+          onError: (error) => {
+            console.error("create product error:", error);
+          },
+        });
+      }
     }
   });
+
+  useEffect(() => {
+    form.reset({
+      name: isEdit && product ? product.name : "",
+      price: isEdit && product ? Number(product.price) : 0,
+      category_id: isEdit && product ? product.category_id : 1,
+      qty: isEdit && product ? Number(product.qty) : 0,
+      color: "",
+      description: isEdit && product ? product.description : ""
+    });
+  }, [isEdit, product]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -241,7 +271,7 @@ const ProductForm = ({ open, setOpen }: Props) => {
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit" form='product-form' className='w-30'>
-              {isPending?
+              {isPending || isPeningUpdate?
               <div className='flex gap-2.5 items-center'>
                 <Spinner className='size-3' /> 
                 <span className='text-sm'>Loading...</span>
