@@ -31,13 +31,13 @@ const Product = () => {
     const [search, setSearch] = useState("");
     // set pagination
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(2);
+    const [limit, setLimit] = useState(5);
     // Queries
     const { data: products, isLoading } = useProduct(search, page, limit);
     // paginations 
     const pagination = products?.pagination;
     const pages = Array.from({
-        length: pagination?.totalPages <= 3? pagination?.totalPages : 3
+        length: pagination?.totalPages && pagination?.totalPages <= 3 ? pagination?.totalPages : 3
     }, (_, i) => i + 1);
     // Edit variable
     const [editProduct, setEditProduct] = useState<ProductType>({} as ProductType);
@@ -126,7 +126,7 @@ const Product = () => {
             </div>
 
             <ProductForm open={open} setOpen={setOpen} product={editProduct} isEdit={isEdit} />
-            <DataTable columns={columns({ onEdit: handleEdit, onDelete: handleDelete })} data={products.data || []} />
+            <DataTable columns={columns({ onEdit: handleEdit, onDelete: handleDelete })} data={products?.data || []} />
             <ConfirmDelete isOpen={isDeleteOpen} setIsOpen={setIsDeleteOpen} message={message} deleteFn={onDelete} />
 
             <div className="flex justify-between mt-2">
@@ -151,7 +151,7 @@ const Product = () => {
                 <Pagination className="flex justify-end">
                     <PaginationContent>
                         <PaginationItem>
-                            <PaginationPrevious onClick={() => setPage(pagination?.prevPage)} />
+                            <PaginationPrevious onClick={() => setPage(pagination?.prevPage || 1)} />
                         </PaginationItem>
                         {pages?.map((p) => (
                             <PaginationItem key={p}>
@@ -167,7 +167,7 @@ const Product = () => {
                         </PaginationItem>
                         
                         <PaginationItem>
-                            <PaginationNext onClick={() => setPage(pagination?.nextPage)} />
+                            <PaginationNext onClick={() => setPage(pagination?.nextPage || 1)} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>

@@ -1,4 +1,4 @@
-import { createProduct, deleteProduct, fetchProduct, updateProduct } from "@/services/product.service"
+import { createProduct, deleteProduct, fetchProduct, updateProduct, uploadProductImage } from "@/services/product.service"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 export const useProduct = (search?: string, page?: number, limit?: number) => {
@@ -35,6 +35,17 @@ export const useDeleteProduct = () => {
 
     return useMutation({
         mutationFn: deleteProduct,
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["products"]})
+        }
+    });
+}
+
+export const useUploadProductImage = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: uploadProductImage,
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ["products"]})
         }

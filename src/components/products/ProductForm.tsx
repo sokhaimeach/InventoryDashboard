@@ -22,9 +22,10 @@ import {
 import { Select, SelectContent, SelectValue, SelectItem, SelectTrigger } from '../ui/select';
 import { useCategories } from '@/hooks/useCategoryQuery';
 import { Spinner } from '../ui/spinner';
-import { useCreateProduct, useUpdateProduct } from '@/hooks/useProduct';
+import { useCreateProduct, useUpdateProduct, useUploadProductImage } from '@/hooks/useProduct';
 import type { ProductType } from './columns';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import FileUpload01 from '../file-upload-01';
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -49,6 +50,9 @@ const ProductForm = ({ open, setOpen, product, isEdit }: Props) => {
 
   const {mutate: createProductMutate, isPending} = useCreateProduct();
   const {mutate: updateProductMutate, isPending: isPeningUpdate} = useUpdateProduct();
+  // upload file mutate
+  const {mutate: uploadProductImageMutate} = useUploadProductImage();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -77,9 +81,22 @@ const ProductForm = ({ open, setOpen, product, isEdit }: Props) => {
         });
       } else {
         createProductMutate(value, {
-          onSuccess: () => {
-            setOpen(false);
-            form.reset();
+          onSuccess: (res) => {
+            uploadProductImageMutate({
+              id: res.data.product_id,
+              file: uploadedFile as File
+            }, {
+              onSuccess: () => {
+                console.log("File uploaded successfully");
+              },
+              onError: (error) => {
+                console.error("File upload error:", error);
+              },
+              onSettled: () => {
+                setOpen(false);
+                form.reset();
+              }
+            });
           },
           onError: (error) => {
             console.error("create product error:", error);
@@ -99,6 +116,12 @@ const ProductForm = ({ open, setOpen, product, isEdit }: Props) => {
       description: isEdit && product ? product.description : ""
     });
   }, [isEdit, product]);
+
+  // Handle file upload complete
+  const handleUploadComplete = (file: File) => {
+    console.log("File ready for upload:", file);
+    setUploadedFile(file);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -265,6 +288,8 @@ const ProductForm = ({ open, setOpen, product, isEdit }: Props) => {
                 )
               }}
             />
+
+            <FileUpload01 onUploadComplete={handleUploadComplete} />
           </FieldGroup>
           <DialogFooter>
             <DialogClose asChild>
