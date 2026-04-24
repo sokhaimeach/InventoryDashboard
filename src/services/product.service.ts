@@ -40,3 +40,7 @@ export const uploadProductImage = async (payload: {id: number, file: File}) => {
         }
     });
 }
+
+export const deleteProductImage = async (imageId: number) => {
+    return await api.delete(`/products/image/${imageId}/delete`);
+}

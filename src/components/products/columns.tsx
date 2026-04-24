@@ -27,8 +27,13 @@ export type ProductType = {
     category_id: number
     name: string
   }
-  images: string[]
+  images: ImagesType[]
   description: string
+}
+
+export type ImagesType = {
+  image_id: number;
+  image_url: string;
 }
 
 interface Props {
@@ -57,18 +62,18 @@ export const columns = ({onEdit, onDelete}: Props): ColumnDef<ProductType>[] => 
       </div>
     )
   },
-  // {
-  //   header: "IMAGES",
-  //   cell: ({row}) => (
-  //       <div className="flex gap-1">
-  //           {row.original.images? row.original.images.map((image) => (
-  //               <img key={image} className="w-20 object-cover" src={image} alt={image} />
-  //           ))
-  //           :
-  //           <p>No image</p>}
-  //       </div>
-  //   )
-  // },
+  {
+    header: "IMAGES",
+    cell: ({row}) => (
+        <div className="flex gap-1">
+            {row.original.images.length > 0? row.original.images.map((image) => (
+                <img key={image.image_id} className="w-20 object-cover rounded-sm" src={image.image_url} alt={"a"} />
+            ))
+            :
+            <img className="w-20 object-cover rounded-sm" src="no_image.jpg" alt="No image available" />}
+        </div>
+    )
+  },
   {
     header: "Quantity",
     cell: ({ row }) => (

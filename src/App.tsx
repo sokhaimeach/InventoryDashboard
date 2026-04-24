@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-query'
 import Category from "./pages/Category";
 import LoginPage from "./pages/LoginPage";
+import { Toaster } from "sonner";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ function App() {
           </Route>
         </Routes>
     </BrowserRouter>
+    <Toaster />
     </QueryClientProvider>
   );
 }
